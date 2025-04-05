@@ -1,0 +1,8 @@
+register endp - user-post-http://localhost:8000/register
+login endp - user-post-http://localhost:8000/login
+
+should be accessed with tokens only ->
+search food -get-(by token)-http://localhost:8000/food
+search food by name-get-http://localhost:8000/food/search/:name
+add food item-
+diet-
