@@ -14,7 +14,7 @@ export default function WorkoutGuide() {
   useEffect(() => {
     const fetchGuide = async () => {
       try {
-        const prompt = `Create a  precise workout guide for the following workout: "${type}" lasting ${minutes} minutes. Include warm-up, main exercises, rest periods, and cool-down. Keep it motivational and easy to follow. Dont make it too wordy . Use Bullet points and no stars.Give Headings in Bold and in a bigger font size.`;
+        const prompt = `Create a  precise workout guide for the following workout: "${type}" lasting ${minutes} minutes. Show the calories burnt expected after this workout .Include warm-up, main exercises, rest periods, and cool-down. Keep it motivational and easy to follow. Dont make it too wordy . Use Bullet points and no stars.Give Headings in Bold and in a bigger font size.`;
 
         // Use the same API call pattern as your working component
         const response = await ai.models.generateContent({
