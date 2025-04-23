@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import image from "../assets/DashBanner.png";
+import guruImg from "../assets/guru.png"; 
 
 const Dashboard = () => {
   const [userName, setUserName] = useState("User");
@@ -26,7 +27,6 @@ const Dashboard = () => {
     quotes[Math.floor(Math.random() * quotes.length)]
   );
 
-  // Fetch and store the username
   useEffect(() => {
     const fetchUsername = async () => {
       try {
@@ -54,7 +54,6 @@ const Dashboard = () => {
     fetchUsername();
   }, []);
 
-  // Retrieve and set initial streak and water intake
   useEffect(() => {
     const storedStreak = localStorage.getItem("streak");
     const storedWaterIntake = JSON.parse(localStorage.getItem("waterIntake"));
@@ -67,13 +66,13 @@ const Dashboard = () => {
     const newWaterIntake = [...waterIntake];
     newWaterIntake[index] = !newWaterIntake[index];
     setWaterIntake(newWaterIntake);
-    localStorage.setItem("waterIntake", JSON.stringify(newWaterIntake)); // Save to localStorage
+    localStorage.setItem("waterIntake", JSON.stringify(newWaterIntake));
   };
 
   const handleWorkoutDone = () => {
     const newStreak = streak + 1;
     setStreak(newStreak);
-    localStorage.setItem("streak", newStreak); // Save to localStorage
+    localStorage.setItem("streak", newStreak);
   };
 
   const totalWaterLiters = (waterIntake.filter(Boolean).length * 0.5).toFixed(1);
@@ -110,12 +109,6 @@ const Dashboard = () => {
       description: "Monitor your diet, and fitness goals.",
       path: "/track",
       color: "bg-blue-500",
-    },
-    {
-      title: "ChatBot",
-      description: "Ask anything—nutrition, fitness, or motivation!",
-      path: "/guru",
-      color: "bg-purple-500",
     },
   ];
 
@@ -156,7 +149,6 @@ const Dashboard = () => {
 
       {/* Greeting and Quote + Streak + Water */}
       <div className="flex justify-between items-center mb-4 px-2 flex-wrap gap-4">
-
         {/* 🔥 Streak Counter */}
         <div className="text-left">
           <h2 className="text-lg font-bold text-orange-400">🔥 Streak: {streak} days</h2>
@@ -211,6 +203,21 @@ const Dashboard = () => {
             <p className="text-sm">{card.description}</p>
           </Link>
         ))}
+      </div>
+
+      {/* Floating Talk to Guru Button */}
+      <div className="fixed bottom-6 right-6 flex flex-col items-center z-50">
+        <Link to="/guru" className="relative group">
+          <img
+            src={guruImg}
+            alt="Talk to Guru"
+            className="w-16 h-16 rounded-full border-2 border-white shadow-lg cursor-pointer object-cover"
+          />
+          {/* Green Dot */}
+          <span className="absolute top-0 right-0 w-4 h-4 bg-green-400 border-2 border-white rounded-full animate-ping group-hover:scale-110"></span>
+          <span className="absolute top-0 right-0 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></span>
+        </Link>
+        <p className="text-white text-xs mt-2">Talk to Guru</p>
       </div>
     </div>
   );
