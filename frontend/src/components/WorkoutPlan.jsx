@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { GoogleGenAI } from "@google/genai";
 import { useSearchParams, Link } from "react-router-dom";
+import BackImg from "../assets/PlannerBg.png"; // Import the background image
 
 // Add your actual Gemini API key here
 const ai = new GoogleGenAI({ apiKey: "AIzaSyACGuNc16pk0PYjgPcGFz22vJOjt7nEzTo" });
@@ -58,7 +59,7 @@ No extra explanations—only the **Workout Plan** and **Diet Plan** titles above
       const title = section.match(/\*\*(.*?)\*\*/)?.[1] || (isWorkout ? "Workout Plan" : "Diet Plan");
   
       return (
-        <div key={index} className="mb-10">
+        <div key={index} className="mb-10" >
           <h2 className="text-xl font-semibold mb-3 text-green-300">{title}</h2>
           <div className="overflow-x-auto">
             <table className="w-full table-auto border border-gray-700 text-sm md:text-base">
@@ -103,8 +104,10 @@ No extra explanations—only the **Workout Plan** and **Diet Plan** titles above
     });
   };
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-6">
-      <h1 className="text-3xl font-bold mb-6 text-green-400">Weekly Workout & Diet Planner</h1>
+<div
+  className="min-h-screen text-white flex flex-col items-center p-6 bg-cover bg-center"
+  style={{ backgroundImage: `url(${BackImg})` }}>
+      <h1 className="text-3xl font-bold mb-6 text-green-400 bg-black border border-black px-4 py-2 rounded-lg">Weekly Workout & Diet Planner</h1>
 
       <form
         onSubmit={handleSubmit}

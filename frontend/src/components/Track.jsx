@@ -1,6 +1,7 @@
 import { useState, useContext } from "react";
 import { UserContext } from "../contexts/UserContext";
 import Diet from "./Diet";
+import image from "../assets/TrackBanner.png"; // Import the banner image
 
 export default function Track() {
     const loggedData = useContext(UserContext);
@@ -58,6 +59,13 @@ export default function Track() {
     }
 
     return (
+        <>
+        {/* Banner Image */}
+              <img
+                src={image}
+                alt="Track Banner"
+                className="w-full h-81 object-cover rounded-xl mb-4"
+              />
         <section className="h-screen flex flex-row justify-center items-start bg-gray-900 text-white p-6 w-full gap-10">
             {/* 🍽️ Food Search & Selection */}
             <div className="w-1/2 flex flex-col items-center">
@@ -138,5 +146,6 @@ export default function Track() {
             {/* 🥗 Diet Component */}
             <Diet dietItems={dietItems} setDietItems={setDietItems} />
         </section>
+        </>
     );
 }

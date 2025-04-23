@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import image from "../assets/DashBanner.png";
 
 const Dashboard = () => {
   const [userName, setUserName] = useState("User");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [waterIntake, setWaterIntake] = useState(Array(8).fill(false));
+  const [streak, setStreak] = useState(0);
 
   const quotes = [
     "You're one workout away from a better mood. 💪",
@@ -24,31 +26,24 @@ const Dashboard = () => {
     quotes[Math.floor(Math.random() * quotes.length)]
   );
 
+  // Fetch and store the username
   useEffect(() => {
     const fetchUsername = async () => {
       try {
         const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("No authentication token found");
-        }
+        if (!token) throw new Error("No authentication token found");
 
         const response = await fetch("http://localhost:8000/username", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || "Failed to fetch username");
-        }
+        if (!response.ok) throw new Error(data.message || "Failed to fetch username");
 
         setUserName(data.name || "User");
       } catch (err) {
         console.error("Username fetch error:", err);
         setError(err.message);
-
         if (err.message.includes("Invalid token") || err.message.includes("expired")) {
           localStorage.removeItem("token");
         }
@@ -56,42 +51,51 @@ const Dashboard = () => {
         setLoading(false);
       }
     };
-
     fetchUsername();
   }, []);
 
+  // Retrieve and set initial streak and water intake
+  useEffect(() => {
+    const storedStreak = localStorage.getItem("streak");
+    const storedWaterIntake = JSON.parse(localStorage.getItem("waterIntake"));
+
+    if (storedStreak) setStreak(parseInt(storedStreak));
+    if (storedWaterIntake) setWaterIntake(storedWaterIntake);
+  }, []);
+
   const handleGlassClick = (index) => {
-    setWaterIntake((prev) =>
-      prev.map((val, i) => (i === index ? !val : val))
-    );
+    const newWaterIntake = [...waterIntake];
+    newWaterIntake[index] = !newWaterIntake[index];
+    setWaterIntake(newWaterIntake);
+    localStorage.setItem("waterIntake", JSON.stringify(newWaterIntake)); // Save to localStorage
   };
 
+  const handleWorkoutDone = () => {
+    const newStreak = streak + 1;
+    setStreak(newStreak);
+    localStorage.setItem("streak", newStreak); // Save to localStorage
+  };
+
+  const totalWaterLiters = (waterIntake.filter(Boolean).length * 0.5).toFixed(1);
+
   if (loading) {
-    return (
-      <div className="text-center mt-10 text-white">
-        Loading user information...
-      </div>
-    );
+    return <div className="text-center mt-10 text-white">Loading user information...</div>;
   }
 
   if (error) {
-    return (
-      <div className="text-red-500 text-center mt-10">Error: {error}</div>
-    );
+    return <div className="text-red-500 text-center mt-10">Error: {error}</div>;
   }
-
-  const greeting = `Hello, ${userName}! Welcome to your fitness journey!`;
 
   const cards = [
     {
-      title: "Workout Plan",
+      title: "Workout and Diet Plan",
       description: "Get your weekly personalized workout and diet in one click.",
       path: "/plan",
       color: "bg-green-500",
     },
     {
-      title: "Calculate Calories",
-      description: "Calculate your daily calorie intake and burn.",
+      title: "Count those Calorie Burns",
+      description: "Calculate your daily calorie burnt based on your workout.",
       path: "/calorie",
       color: "bg-yellow-500",
     },
@@ -103,7 +107,7 @@ const Dashboard = () => {
     },
     {
       title: "Track Progress",
-      description: "Monitor your weight, diet, and fitness goals.",
+      description: "Monitor your diet, and fitness goals.",
       path: "/track",
       color: "bg-blue-500",
     },
@@ -116,19 +120,87 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-evenly p-6">
-      {/* 👋 Greeting */}
-      <h1 className="text-2xl md:text-3xl text-green-400 text-center max-w-xxxxl font-bold">
-        {greeting}
-      </h1>
+    <div className="min-h-screen bg-gray-900 text-white p-4 relative">
+      <style>
+        {`
+          @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
+          }
 
-      {/* 💡 Motivational Quote */}
-      <h2 className="text-2xl md:text-3xl text-green-400 text-center max-w-xl font-semibold">
-        {quote}
-      </h2>
+          .animate-fade-in {
+            animation: fadeIn 1s ease-in-out forwards;
+          }
 
-      {/* 🔗 Link Cards */}
-      <div className="flex gap-6 flex-wrap justify-center">
+          .glass {
+            transition: background-color 0.4s ease, transform 0.3s ease;
+          }
+
+          .glass-filled {
+            background-color: #60a5fa;
+            transform: scale(1.1);
+          }
+
+          .glass-empty {
+            background-color: rgba(255, 255, 255, 0.1);
+          }
+        `}
+      </style>
+
+      {/* Banner Image */}
+      <img
+        src={image}
+        alt="Fitness Banner"
+        className="w-full h-81 object-cover rounded-xl mb-4"
+      />
+
+      {/* Greeting and Quote + Streak + Water */}
+      <div className="flex justify-between items-center mb-4 px-2 flex-wrap gap-4">
+
+        {/* 🔥 Streak Counter */}
+        <div className="text-left">
+          <h2 className="text-lg font-bold text-orange-400">🔥 Streak: {streak} days</h2>
+          <button
+            onClick={handleWorkoutDone}
+            className="mt-1 bg-orange-500 text-white py-1 px-3 rounded hover:bg-orange-600 text-sm"
+          >
+            Workout Done
+          </button>
+        </div>
+
+        {/* Greeting + Quote */}
+        <div className="text-center grow animate-fade-in">
+          <h1 className="text-2xl md:text-3xl font-bold text-green-400">
+            Hello, {userName}! Welcome to your fitness journey!
+          </h1>
+          <p className="text-green-300 text-sm md:text-base mt-1">{quote}</p>
+        </div>
+
+        {/* 💧 Water Tracker */}
+        <div className="text-right border border-blue-400 p-2 rounded-lg">
+          <h3 className="text-blue-300 font-semibold mb-2 text-sm">Water Intake 💧</h3>
+          <div className="flex gap-2 justify-end flex-wrap">
+            {waterIntake.map((filled, idx) => (
+              <div
+                key={idx}
+                onClick={() => handleGlassClick(idx)}
+                className={`glass w-6 h-14 cursor-pointer border-2 rounded-[2px] ${filled ? "glass-filled border-blue-300" : "glass-empty border-blue-400"}`}
+                style={{
+                  clipPath: "polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)",
+                  transform: "rotate(180deg)",
+                  WebkitBackdropFilter: "blur(8px)",
+                  backdropFilter: "blur(8px)",
+                }}
+                title={`Glass ${idx + 1}`}
+              ></div>
+            ))}
+          </div>
+          <p className="mt-1 text-xs text-blue-200">You drank {totalWaterLiters}L today</p>
+        </div>
+      </div>
+
+      {/* Main Feature Cards */}
+      <div className="flex gap-6 flex-wrap justify-center my-8">
         {cards.map((card, index) => (
           <Link
             to={card.path}
@@ -139,34 +211,6 @@ const Dashboard = () => {
             <p className="text-sm">{card.description}</p>
           </Link>
         ))}
-      </div>
-
-      {/* 💧 Water Intake Tracker */}
-      <div className="text-center mt-6">
-        <h3 className="text-lg text-blue-300 font-semibold mb-2">
-          💧 Complete Your Water Intake Goal
-        </h3>
-        <div className="flex justify-center gap-2 flex-wrap">
-          {waterIntake.map((filled, idx) => (
-            <div
-              key={idx}
-              onClick={() => handleGlassClick(idx)}
-              className={`w-6 h-12 cursor-pointer transition border-2 rounded-[2px] ${
-                filled
-                  ? "bg-blue-400 border-blue-300"
-                  : "bg-white/10 border-blue-400"
-              }`}
-              style={{
-                clipPath: "polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)",
-                transform: "rotate(180deg)",
-                WebkitBackdropFilter: "blur(8px)",
-                backdropFilter: "blur(8px)",
-                boxShadow: "0 4px 20px rgba(255, 255, 255, 0.1)",
-              }}
-              title={`Glass ${idx + 1}`}
-            ></div>
-          ))}
-        </div>
       </div>
     </div>
   );

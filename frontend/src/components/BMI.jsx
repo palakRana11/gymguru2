@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import BackImg from "../assets/BMIBg.png"; // Import the background image
 
 const BMI = () => {
   const [formData, setFormData] = useState({
@@ -47,7 +48,8 @@ const BMI = () => {
   };
 
   return (
-    <div className="bg-gray-900 text-white min-h-screen flex items-center justify-center px-4 py-6">
+    <div className="bg-gray-900 text-white min-h-screen flex items-center justify-center px-4 py-6"
+    style={{ backgroundImage: `url(${BackImg})` }}>
       <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-4xl">
         <h2 className="text-2xl font-bold mb-6 text-center">🧮 BMI Calculator</h2>
 

@@ -37,6 +37,8 @@ export default function Register() {
           alert(`Error: ${data.error}`);
         } else {
           alert("User registered successfully!");
+          console.log("Please Login Now");
+          window.location.href = "/login"; // Redirect to the login page
         }
       })
       .catch(error => console.error("Error:", error));

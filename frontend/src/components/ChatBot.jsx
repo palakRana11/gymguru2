@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { GoogleGenAI } from "@google/genai";
+import BackImg from "../assets/GuruBg.png"; // Import the background image
 
 // ✅ Initialize Gemini AI with your API Key
 const ai = new GoogleGenAI({ apiKey: "AIzaSyACGuNc16pk0PYjgPcGFz22vJOjt7nEzTo" });
@@ -34,7 +35,8 @@ export default function ChatBot() {
         response?.candidates?.[0]?.content?.parts?.[0]?.text ||
         "Sorry, I couldn't understand.";
 
-      
+      // Handle "*" and "**" text formatting
+      reply = formatText(reply);
 
       const botMessage = {
         text: reply,
@@ -53,11 +55,26 @@ export default function ChatBot() {
     setInput("");
   }
 
+  // Function to format text with "*" and "**"
+  function formatText(text) {
+    // Replace **text** with bold text
+    text = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+    // Add new lines for *text*
+    text = text.replace(/\*(.*?)\*/g, "<br />$1<br />");
+
+    // Replace any remaining newline characters with <br /> for multi-line formatting
+    text = text.replace(/\n/g, "<br />");
+
+    return text;
+  }
+
   return (
-    <div className="h-screen bg-gray-900 text-white flex flex-col items-center p-6">
+    <div className="h-screen bg-gray-900 text-white flex flex-col items-center p-6"
+    style={{ backgroundImage: `url(${BackImg})` }}>
       {/* 🟢 Top Heading */}
       <h1 className="text-3xl font-bold text-green-400 mb-2">
-        Keep your queries away – it's chatbot time!
+        Keep your queries away – Ask the GURU!
       </h1>
 
       {/* 💬 Chat Box */}
@@ -70,9 +87,8 @@ export default function ChatBot() {
                 ? "bg-green-600 text-white ml-auto text-right"
                 : "bg-gray-700 text-gray-200 mr-auto text-left"
             }`}
-          >
-            {msg.text}
-          </div>
+            dangerouslySetInnerHTML={{ __html: msg.text }} // Render HTML content
+          ></div>
         ))}
       </div>
 
@@ -95,3 +111,5 @@ export default function ChatBot() {
     </div>
   );
 }
+
+//AIzaSyACGuNc16pk0PYjgPcGFz22vJOjt7nEzTo
