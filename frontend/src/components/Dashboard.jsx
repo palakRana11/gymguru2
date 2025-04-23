@@ -85,7 +85,7 @@ const Dashboard = () => {
   const cards = [
     {
       title: "Workout Plan",
-      description: "Get your weekly personalized workout in one click.",
+      description: "Get your weekly personalized workout and diet in one click.",
       path: "/plan",
       color: "bg-green-500",
     },

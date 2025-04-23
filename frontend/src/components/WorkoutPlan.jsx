@@ -6,45 +6,34 @@ import { useSearchParams, Link } from "react-router-dom";
 const ai = new GoogleGenAI({ apiKey: "AIzaSyACGuNc16pk0PYjgPcGFz22vJOjt7nEzTo" });
 
 export default function WorkoutPlan() {
-  const [searchParams] = useSearchParams();
-  const [plan, setPlan] = useState("");
-  const [loading, setLoading] = useState(false);
   const [goal, setGoal] = useState("");
   const [minutes, setMinutes] = useState("");
+  const [cuisine, setCuisine] = useState("Indian");
+  const [plan, setPlan] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleGenerate = async () => {
-    if (!goal || !minutes) return;
-    if (!ai.apiKey) {
-      setPlan("API key is missing. Please check your setup.");
-      return;
-    }
+    if (!goal || !minutes || !cuisine) return;
 
     setLoading(true);
-
     try {
-      const prompt = `Create a 2 week workout plan for a person to achieve the goal "${goal}" in ${minutes} minutes per day. Make a week's plan different and structure it as a table. `;
+      const prompt = `Create two separate, clearly labeled markdown tables: one for a 1-week workout plan and one for a 1-week diet plan. 
+Each table must have a header row and at least 7 rows (one per day). 
+The workout table should include the day and workout name (like "Cardio + Stretching", "Upper Body Strength", etc).
+The diet table should include the day and meals, using the "${cuisine}" cuisine.
+No extra explanations—only the **Workout Plan** and **Diet Plan** titles above the tables in bold.`;
 
       const response = await ai.models.generateContent({
         model: "gemini-2.0-flash",
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: prompt }],
-          },
-        ],
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
       });
 
-      const text =
-        response?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        "Could not generate plan. Please try again.";
-
-      console.log("Generated Response:", text); // for debugging
+      const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || "Could not generate plan.";
       setPlan(text);
     } catch (err) {
-      console.error("Error generating plan:", err);
-      setPlan("Failed to generate plan. Please try again later.");
+      console.error(err);
+      setPlan("Failed to generate plan. Try again.");
     }
-
     setLoading(false);
   };
 
@@ -53,47 +42,56 @@ export default function WorkoutPlan() {
     handleGenerate();
   };
 
-  const renderWorkoutTable = (raw) => {
-    if (!raw.includes("|")) {
-      return <p className="text-lg whitespace-pre-wrap">{raw}</p>; // fallback if no table formatting
-    }
-
-    const weeks = raw.split("**Week");
-    return weeks.slice(1).map((weekText, i) => {
-      const lines = weekText.split("\n").filter((line) => line.trim());
-      const weekTitle = `Week ${i + 1}`;
+  const renderPlanTables = (raw) => {
+    if (!raw.includes("|")) return <p className="text-lg whitespace-pre-wrap">{raw}</p>;
+  
+    const sections = raw.split(/(?=\*\*.*?Plan)/);
+  
+    return sections.map((section, index) => {
+      const isWorkout = section.toLowerCase().includes("workout");
+      const isDiet = section.toLowerCase().includes("diet");
+      if (!isWorkout && !isDiet) return null;
+  
+      const lines = section.split("\n").filter((line) => line.trim() && line.includes("|"));
+      if (lines.length === 0) return null;
+  
+      const title = section.match(/\*\*(.*?)\*\*/)?.[1] || (isWorkout ? "Workout Plan" : "Diet Plan");
+  
       return (
-        <div key={i} className="mb-8">
-          <h2 className="text-xl font-semibold mb-2 text-green-300">{weekTitle}</h2>
+        <div key={index} className="mb-10">
+          <h2 className="text-xl font-semibold mb-3 text-green-300">{title}</h2>
           <div className="overflow-x-auto">
-            <table className="w-full table-auto border border-gray-600 text-sm md:text-base">
+            <table className="w-full table-auto border border-gray-700 text-sm md:text-base">
               <thead>
                 <tr className="bg-gray-700">
-                  <th className="p-2 border border-gray-600">Day</th>
-                  <th className="p-2 border border-gray-600">Workout</th>
-                  <th className="p-2 border border-gray-600">Details</th>
+                  {lines[0].split("|").filter(Boolean).map((head, idx) => (
+                    <th key={idx} className="p-2 border border-gray-600">{head.trim()}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {lines.slice(1).map((line, idx) => {
-                  const parts = line.split("|").map((p) => p.trim()).filter(Boolean);
-                  if (parts.length < 3) return null;
-
-                  const [day, workout, details] = parts;
-                  const workoutName = workout.replace(/\*\*/g, "");
-
+                  const parts = line.split("|").filter(Boolean).map((p) => p.trim());
                   return (
                     <tr key={idx} className="border-b border-gray-700 hover:bg-gray-800">
-                      <td className="p-2 border border-gray-600">{day}</td>
-                      <td className="p-2 border border-gray-600">
-                        <Link
-                          to={`/guide?type=${encodeURIComponent(workoutName)}&minutes=${minutes}`}
-                          className="text-green-400 underline hover:text-green-300"
-                        >
-                          {workoutName}
-                        </Link>
-                      </td>
-                      <td className="p-2 border border-gray-600">{details}</td>
+                      {parts.map((cell, i) => {
+                        const text = cell.replace(/\*\*/g, "");
+                        const isWorkoutCell = isWorkout && i === 1; // Now correctly targets second column
+                        return (
+                          <td key={i} className="p-2 border border-gray-600">
+                            {isWorkoutCell ? (
+                              <Link
+                                to={`/guide?type=${encodeURIComponent(text)}&minutes=${minutes}`}
+                                className="text-green-400 underline hover:text-green-300"
+                              >
+                                {text}
+                              </Link>
+                            ) : (
+                              text
+                            )}
+                          </td>
+                        );
+                      })}
                     </tr>
                   );
                 })}
@@ -104,18 +102,17 @@ export default function WorkoutPlan() {
       );
     });
   };
-
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-6">
-      <h1 className="text-3xl font-bold mb-6 text-green-400">Workout Planner</h1>
+      <h1 className="text-3xl font-bold mb-6 text-green-400">Weekly Workout & Diet Planner</h1>
 
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-xl bg-gray-800 p-6 rounded-xl shadow-lg mb-6"
+        className="w-full max-w-xl bg-gray-800 p-6 rounded-xl shadow-lg mb-8"
       >
         <input
           type="text"
-          placeholder="Fitness Goal (e.g. build muscle)"
+          placeholder="Fitness Goal (e.g. lose fat, build muscle)"
           className="w-full mb-4 p-3 rounded text-black"
           value={goal}
           onChange={(e) => setGoal(e.target.value)}
@@ -123,12 +120,27 @@ export default function WorkoutPlan() {
         />
         <input
           type="number"
-          placeholder="Workout Time in Minutes"
+          placeholder="Workout Time (in minutes per day)"
           className="w-full mb-4 p-3 rounded text-black"
           value={minutes}
           onChange={(e) => setMinutes(e.target.value)}
           required
         />
+        <select
+          className="w-full mb-4 p-3 rounded text-black"
+          value={cuisine}
+          onChange={(e) => setCuisine(e.target.value)}
+          required
+        >
+          <option value="Indian">Indian</option>
+          <option value="Pure Vegeterian Indian">Pure Veg Indian</option>
+          <option value="Eggiterian Indian">Eggiterrian Indian</option>
+          <option value="Mediterranean">Mediterranean</option>
+          <option value="Continental">Continental</option>
+          <option value="Vegan">Vegan</option>
+          <option value="High Protein">High Protein</option>
+          <option value="Saatvik">Saatvik</option>
+        </select>
         <button
           type="submit"
           className="w-full bg-green-400 text-black p-3 rounded hover:bg-green-500"
@@ -139,14 +151,11 @@ export default function WorkoutPlan() {
 
       <div className="w-full max-w-5xl bg-gray-800 p-6 rounded-xl shadow-xl">
         {loading ? (
-          <p className="text-lg">Generating your personalized workout...</p>
+          <p className="text-lg text-center">Generating your weekly plan...</p>
         ) : (
-          plan && renderWorkoutTable(plan)
+          plan && renderPlanTables(plan)
         )}
       </div>
     </div>
   );
 }
-
-//AIzaSyCRCFwmGDi7CXrz0gZN7yibaNno18Rxrkw
-

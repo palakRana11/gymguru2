@@ -6,20 +6,34 @@
 * {
   font-family: Inter, system-ui, Avenir, "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 1.5;
-  margin: 10px;
-  padding: 10px;
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-/* Optional: Additional Custom Styles */
+/* Set background image with overlay */
 body {
-  @apply bg-gray-100 text-gray-900; /* Light background, dark text */
+  @apply text-gray-900 relative;
+  background-image: url('/your-image.png'); /* Replace with actual image path */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  min-height: 100vh;
 }
 
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4); /* 60% transparency */
+  z-index: -1;
+}
+
+/* Optional utility classes */
 .container {
-  @apply max-w-7xl mx-auto px-4; /* Responsive container */
+  @apply max-w-7xl mx-auto px-4;
 }
 
 .btn {
-  @apply bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600; /* Styled button */
+  @apply bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600;
 }
