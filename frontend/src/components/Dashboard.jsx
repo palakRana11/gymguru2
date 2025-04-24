@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import image from "../assets/DashBanner.png";
-import guruImg from "../assets/guru.png"; 
+import guruImg from "../assets/guru.png";
 
 const Dashboard = () => {
   const [userName, setUserName] = useState("User");
@@ -55,24 +55,26 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    const storedStreak = localStorage.getItem("streak");
-    const storedWaterIntake = JSON.parse(localStorage.getItem("waterIntake"));
+    if (!userName || userName === "User") return;
+
+    const storedStreak = localStorage.getItem(`${userName}_streak`);
+    const storedWaterIntake = JSON.parse(localStorage.getItem(`${userName}_waterIntake`));
 
     if (storedStreak) setStreak(parseInt(storedStreak));
     if (storedWaterIntake) setWaterIntake(storedWaterIntake);
-  }, []);
+  }, [userName]);
 
   const handleGlassClick = (index) => {
     const newWaterIntake = [...waterIntake];
     newWaterIntake[index] = !newWaterIntake[index];
     setWaterIntake(newWaterIntake);
-    localStorage.setItem("waterIntake", JSON.stringify(newWaterIntake));
+    localStorage.setItem(`${userName}_waterIntake`, JSON.stringify(newWaterIntake));
   };
 
   const handleWorkoutDone = () => {
     const newStreak = streak + 1;
     setStreak(newStreak);
-    localStorage.setItem("streak", newStreak);
+    localStorage.setItem(`${userName}_streak`, newStreak);
   };
 
   const totalWaterLiters = (waterIntake.filter(Boolean).length * 0.5).toFixed(1);
@@ -120,36 +122,32 @@ const Dashboard = () => {
             0% { opacity: 0; transform: translateY(-10px); }
             100% { opacity: 1; transform: translateY(0); }
           }
-
           .animate-fade-in {
             animation: fadeIn 1s ease-in-out forwards;
           }
-
           .glass {
             transition: background-color 0.4s ease, transform 0.3s ease;
           }
-
           .glass-filled {
             background-color: #60a5fa;
             transform: scale(1.1);
           }
-
           .glass-empty {
             background-color: rgba(255, 255, 255, 0.1);
           }
         `}
       </style>
 
-      {/* Banner Image */}
+      {/* Banner */}
       <img
         src={image}
         alt="Fitness Banner"
         className="w-full h-81 object-cover rounded-xl mb-4"
       />
 
-      {/* Greeting and Quote + Streak + Water */}
+      {/* Greeting and Trackers */}
       <div className="flex justify-between items-center mb-4 px-2 flex-wrap gap-4">
-        {/* 🔥 Streak Counter */}
+        {/* Streak */}
         <div className="text-left">
           <h2 className="text-lg font-bold text-orange-400">🔥 Streak: {streak} days</h2>
           <button
@@ -168,7 +166,7 @@ const Dashboard = () => {
           <p className="text-green-300 text-sm md:text-base mt-1">{quote}</p>
         </div>
 
-        {/* 💧 Water Tracker */}
+        {/* Water Intake */}
         <div className="text-right border border-blue-400 p-2 rounded-lg">
           <h3 className="text-blue-300 font-semibold mb-2 text-sm">Water Intake 💧</h3>
           <div className="flex gap-2 justify-end flex-wrap">
@@ -176,7 +174,9 @@ const Dashboard = () => {
               <div
                 key={idx}
                 onClick={() => handleGlassClick(idx)}
-                className={`glass w-6 h-14 cursor-pointer border-2 rounded-[2px] ${filled ? "glass-filled border-blue-300" : "glass-empty border-blue-400"}`}
+                className={`glass w-6 h-14 cursor-pointer border-2 rounded-[2px] ${
+                  filled ? "glass-filled border-blue-300" : "glass-empty border-blue-400"
+                }`}
                 style={{
                   clipPath: "polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)",
                   transform: "rotate(180deg)",
@@ -191,7 +191,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Main Feature Cards */}
+      {/* Feature Cards */}
       <div className="flex gap-6 flex-wrap justify-center my-8">
         {cards.map((card, index) => (
           <Link
@@ -205,7 +205,7 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Floating Talk to Guru Button */}
+      {/* Talk to Guru Button */}
       <div className="fixed bottom-6 right-6 flex flex-col items-center z-50">
         <Link to="/guru" className="relative group">
           <img
@@ -213,7 +213,6 @@ const Dashboard = () => {
             alt="Talk to Guru"
             className="w-16 h-16 rounded-full border-2 border-white shadow-lg cursor-pointer object-cover"
           />
-          {/* Green Dot */}
           <span className="absolute top-0 right-0 w-4 h-4 bg-green-400 border-2 border-white rounded-full animate-ping group-hover:scale-110"></span>
           <span className="absolute top-0 right-0 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></span>
         </Link>
@@ -224,3 +223,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

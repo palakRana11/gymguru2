@@ -134,7 +134,7 @@ export default function Track() {
                             onChange={(e) => setGrams(e.target.value)}
                         />
                         <button 
-                            className="bg-neon-green text-black p-2 rounded-lg hover:bg-green-500 transition-all shadow-md transform hover:scale-105 w-full mt-2"
+                            className="bg-neon-green text-purple p-2 rounded-lg hover:bg-green-500 transition-all shadow-md transform hover:scale-105 w-full mt-2"
                             onClick={() => addToDiet(selectedFood)}
                         >
                             ➕ Add to Diet
