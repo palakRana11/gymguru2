@@ -4,10 +4,10 @@ import logo from "../assets/GymGuruLogo.png"; // Import the logo
 
 export default function Navbar() {
   return (
-    <nav className="bg-black text-white h-24 p-4 flex items-center justify-between">
+    <nav className="bg-black text-white h-28 p-4 flex items-center justify-between">
       {/* Logo Section */}
       <Link to="/dashboard">
-        <img src={logo} alt="GymGuru Logo" className="h-24 px-0 w-auto ml-4" />
+        <img src={logo} alt="GymGuru Logo" className="h-24 px-10 w-auto ml-4" />
       </Link>
 
       {/* Navigation Links */}

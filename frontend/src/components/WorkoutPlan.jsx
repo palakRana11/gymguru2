@@ -14,6 +14,7 @@ export default function WorkoutPlan() {
   const [cuisine, setCuisine] = useState("Indian");
   const [plan, setPlan] = useState("");
   const [loading, setLoading] = useState(false);
+  const [age, setAge] = useState("");
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -21,15 +22,40 @@ export default function WorkoutPlan() {
     if (saved) setPlan(saved);
   }, []);
 
+  // Fetch age from backend
+  useEffect(() => {
+    const fetchAge = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch("http://localhost:8000/username", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+        if (data.age) {
+          setAge(data.age);
+        } else {
+          console.error("Age not received:", data);
+        }
+      } catch (err) {
+        console.error("Error fetching age:", err);
+      }
+    };
+
+    fetchAge();
+  }, []);
+
   const handleGenerate = async () => {
-    if (!goal || !minutes || !cuisine) return;
+    if (!goal || !minutes || !cuisine || !age) return;
 
     setLoading(true);
     try {
       const prompt = `Create two separate, clearly labeled markdown tables: one for a 1-week workout plan and one for a 1-week diet plan. 
 Each table must have a header row and at least 7 rows (one per day). 
 The workout table should include the day and workout name (like "Cardio + Stretching", "Upper Body Strength", etc).
-The diet table should include the day and meals, using the "${cuisine}" cuisine.
+The diet table should include the day and meals, using the "${cuisine}" cuisine for a person of age "${age}".
 No extra explanations—only the **Workout Plan** and **Diet Plan** titles above the tables in bold.`;
 
       const response = await ai.models.generateContent({
@@ -42,7 +68,7 @@ No extra explanations—only the **Workout Plan** and **Diet Plan** titles above
         "Could not generate plan.";
 
       setPlan(text);
-      localStorage.setItem("nutrifit_plan", text); // Save plan
+      localStorage.setItem("nutrifit_plan", text);
     } catch (err) {
       console.error(err);
       setPlan("Failed to generate plan. Try again.");
