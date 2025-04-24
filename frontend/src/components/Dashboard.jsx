@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import image from "../assets/DashBanner.png";
+import image from "../assets/DashBanner01.png";//Subject to changes
 import guruImg from "../assets/guru.png";
 
 const Dashboard = () => {
