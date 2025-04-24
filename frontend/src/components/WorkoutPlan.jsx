@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { GoogleGenAI } from "@google/genai";
 import { useSearchParams, Link } from "react-router-dom";
-import BackImg from "../assets/PlannerBg.png"; // Import the background image
+import BackImg from "../assets/PlannerBg.png"; // Background image
 
-// Add your actual Gemini API key here
-const ai = new GoogleGenAI({ apiKey: "AIzaSyACGuNc16pk0PYjgPcGFz22vJOjt7nEzTo" });
+// Initialize Gemini
+const ai = new GoogleGenAI({
+  apiKey: "AIzaSyACGuNc16pk0PYjgPcGFz22vJOjt7nEzTo", // ⚠️ Move this to backend for security
+});
 
 export default function WorkoutPlan() {
   const [goal, setGoal] = useState("");
@@ -12,6 +14,12 @@ export default function WorkoutPlan() {
   const [cuisine, setCuisine] = useState("Indian");
   const [plan, setPlan] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("nutrifit_plan");
+    if (saved) setPlan(saved);
+  }, []);
 
   const handleGenerate = async () => {
     if (!goal || !minutes || !cuisine) return;
@@ -29,8 +37,12 @@ No extra explanations—only the **Workout Plan** and **Diet Plan** titles above
         contents: [{ role: "user", parts: [{ text: prompt }] }],
       });
 
-      const text = response?.candidates?.[0]?.content?.parts?.[0]?.text || "Could not generate plan.";
+      const text =
+        response?.candidates?.[0]?.content?.parts?.[0]?.text ||
+        "Could not generate plan.";
+
       setPlan(text);
+      localStorage.setItem("nutrifit_plan", text); // Save plan
     } catch (err) {
       console.error(err);
       setPlan("Failed to generate plan. Try again.");
@@ -44,45 +56,63 @@ No extra explanations—only the **Workout Plan** and **Diet Plan** titles above
   };
 
   const renderPlanTables = (raw) => {
-    if (!raw.includes("|")) return <p className="text-lg whitespace-pre-wrap">{raw}</p>;
-  
+    if (!raw.includes("|"))
+      return <p className="text-lg whitespace-pre-wrap">{raw}</p>;
+
     const sections = raw.split(/(?=\*\*.*?Plan)/);
-  
+
     return sections.map((section, index) => {
       const isWorkout = section.toLowerCase().includes("workout");
       const isDiet = section.toLowerCase().includes("diet");
       if (!isWorkout && !isDiet) return null;
-  
-      const lines = section.split("\n").filter((line) => line.trim() && line.includes("|"));
+
+      const lines = section
+        .split("\n")
+        .filter((line) => line.trim() && line.includes("|"));
       if (lines.length === 0) return null;
-  
-      const title = section.match(/\*\*(.*?)\*\*/)?.[1] || (isWorkout ? "Workout Plan" : "Diet Plan");
-  
+
+      const title =
+        section.match(/\*\*(.*?)\*\*/)?.[1] ||
+        (isWorkout ? "Workout Plan" : "Diet Plan");
+
       return (
-        <div key={index} className="mb-10" >
+        <div key={index} className="mb-10">
           <h2 className="text-xl font-semibold mb-3 text-green-300">{title}</h2>
           <div className="overflow-x-auto">
             <table className="w-full table-auto border border-gray-700 text-sm md:text-base">
               <thead>
                 <tr className="bg-gray-700">
-                  {lines[0].split("|").filter(Boolean).map((head, idx) => (
-                    <th key={idx} className="p-2 border border-gray-600">{head.trim()}</th>
-                  ))}
+                  {lines[0]
+                    .split("|")
+                    .filter(Boolean)
+                    .map((head, idx) => (
+                      <th key={idx} className="p-2 border border-gray-600">
+                        {head.trim()}
+                      </th>
+                    ))}
                 </tr>
               </thead>
               <tbody>
                 {lines.slice(1).map((line, idx) => {
-                  const parts = line.split("|").filter(Boolean).map((p) => p.trim());
+                  const parts = line
+                    .split("|")
+                    .filter(Boolean)
+                    .map((p) => p.trim());
                   return (
-                    <tr key={idx} className="border-b border-gray-700 hover:bg-gray-800">
+                    <tr
+                      key={idx}
+                      className="border-b border-gray-700 hover:bg-gray-800"
+                    >
                       {parts.map((cell, i) => {
                         const text = cell.replace(/\*\*/g, "");
-                        const isWorkoutCell = isWorkout && i === 1; // Now correctly targets second column
+                        const isWorkoutCell = isWorkout && i === 1;
                         return (
                           <td key={i} className="p-2 border border-gray-600">
                             {isWorkoutCell ? (
                               <Link
-                                to={`/guide?type=${encodeURIComponent(text)}&minutes=${minutes}`}
+                                to={`/guide?type=${encodeURIComponent(
+                                  text
+                                )}&minutes=${minutes}`}
                                 className="text-green-400 underline hover:text-green-300"
                               >
                                 {text}
@@ -103,11 +133,15 @@ No extra explanations—only the **Workout Plan** and **Diet Plan** titles above
       );
     });
   };
+
   return (
-<div
-  className="min-h-screen text-white flex flex-col items-center p-6 bg-cover bg-center"
-  style={{ backgroundImage: `url(${BackImg})` }}>
-      <h1 className="text-3xl font-bold mb-6 text-green-400 bg-black border border-black px-4 py-2 rounded-lg">Weekly Workout & Diet Planner</h1>
+    <div
+      className="min-h-screen text-white flex flex-col items-center p-6 bg-cover bg-center"
+      style={{ backgroundImage: `url(${BackImg})` }}
+    >
+      <h1 className="text-3xl font-bold mb-6 text-green-400 bg-black border border-black px-4 py-2 rounded-lg">
+        Weekly Workout & Diet Planner
+      </h1>
 
       <form
         onSubmit={handleSubmit}
