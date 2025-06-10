@@ -5,7 +5,7 @@ import Register from './components/Register';
 import Login from './components/Login';
 import NotFound from './components/NotFound';
 import Navbar from "./components/Navbar";
-import Dashboard from './components/Dashboard';  // Add a new component
+import Dashboard from './components/Dashboard';  
 import { UserContext } from './contexts/UserContext';
 import Track from './components/Track';
 import Chatbot from './components/ChatBot';

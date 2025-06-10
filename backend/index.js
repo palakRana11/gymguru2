@@ -5,11 +5,18 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const userModel = require('./models/userModel');
 const foodModel = require('./models/foodModel');
+const axios = require('axios');
+require('dotenv').config({ path: './.env' });
 
 const app = express();
 
 app.use(express.json());
 app.use(cors());
+
+
+const apiKey = process.env.GOOGLE_API_KEY;
+console.log("Loaded API Key:", apiKey); // Temporary check
+
 
 mongoose.connect("mongodb://localhost:27017/gymgurudb", { 
     useNewUrlParser: true, 
@@ -74,6 +81,33 @@ app.post('/login', async (req, res) => {
     } catch (err) {
         console.error("Login Error:", err);
         res.status(500).send({ message: "Error logging in" });
+    }
+});
+
+
+// Endpoint for Gemini API
+app.post('/gemini', async (req, res) => {
+    const { prompt } = req.body;
+    console.log("Prompt received:", prompt);
+
+    try {
+        const response = await axios.post(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+            {
+                contents: [
+                    {
+                        role: "user",   // ✅ Add this line
+                        parts: [{ text: prompt }]
+                    }
+                ]
+            }
+        );
+
+        const result = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response.";
+        res.status(200).json({ reply: result });
+    } catch (err) {
+        console.error("Gemini API Error:", err.response?.data || err.message); // Show API error details
+        res.status(500).json({ message: "Error connecting to Gemini API", details: err.response?.data });
     }
 });
 

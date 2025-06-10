@@ -1,12 +1,7 @@
 import { useState, useEffect } from "react";
-import { GoogleGenAI } from "@google/genai";
+import axios from "axios";
 import { useSearchParams, Link } from "react-router-dom";
-import BackImg from "../assets/PlannerBg.png"; // Background image
-
-// Initialize Gemini
-const ai = new GoogleGenAI({
-  apiKey: "AIzaSyACGuNc16pk0PYjgPcGFz22vJOjt7nEzTo", // ⚠️ Move this to backend for security
-});
+import BackImg from "../assets/PlannerBg.png";
 
 export default function WorkoutPlan() {
   const [goal, setGoal] = useState("");
@@ -16,13 +11,11 @@ export default function WorkoutPlan() {
   const [loading, setLoading] = useState(false);
   const [age, setAge] = useState("");
 
-  // Load from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem("nutrifit_plan");
     if (saved) setPlan(saved);
   }, []);
 
-  // Fetch age from backend
   useEffect(() => {
     const fetchAge = async () => {
       try {
@@ -55,22 +48,18 @@ export default function WorkoutPlan() {
       const prompt = `Create two separate, clearly labeled markdown tables: one for a 1-week workout plan and one for a 1-week diet plan. 
 Each table must have a header row and at least 7 rows (one per day). 
 The workout table should include the day and workout name (like "Cardio + Stretching", "Upper Body Strength", etc).
-The diet table should include the day and meals, using the "${cuisine}" cuisine for a person of age "${age}".
+The diet table should include the day and meals, using the "${cuisine}" cuisine for a person of age "${age}" .
 No extra explanations—only the **Workout Plan** and **Diet Plan** titles above the tables in bold.`;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
+      const response = await axios.post("http://localhost:8000/gemini", {
+        prompt,
       });
 
-      const text =
-        response?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        "Could not generate plan.";
-
+      const text = response?.data?.reply || "Could not generate plan.";
       setPlan(text);
       localStorage.setItem("nutrifit_plan", text);
     } catch (err) {
-      console.error(err);
+      console.error("Error calling backend:", err.message);
       setPlan("Failed to generate plan. Try again.");
     }
     setLoading(false);
@@ -214,11 +203,12 @@ No extra explanations—only the **Workout Plan** and **Diet Plan** titles above
 
       <div className="w-full max-w-5xl bg-gray-800 p-6 rounded-xl shadow-xl">
         {loading ? (
-          <p className="text-lg text-center">Generating your weekly plan...</p>
+          <p className="text-lg text-center">Generating...</p>
         ) : (
-          plan && renderPlanTables(plan)
+          renderPlanTables(plan)
         )}
       </div>
     </div>
   );
 }
+
