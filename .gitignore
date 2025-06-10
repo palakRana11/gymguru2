@@ -1,6 +1,10 @@
 # Created by https://www.toptal.com/developers/gitignore/api/node,python,django
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,python,django
 
+
+### Node ###
+*.env 
+
 ### Django ###
 *.log
 *.pot
