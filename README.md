@@ -95,7 +95,8 @@ gymguru/
 │   │   ├── App.jsx
 │   │   └── main.jsx
 │   └── public/
-│
+├── Ml-api/
+    └── CaloryModel.py
 └── README.md
 ```
 
