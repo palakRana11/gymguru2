@@ -1,6 +1,6 @@
 # 🏋️‍♂️ GymGuru - Your AI-Powered Fitness & Nutrition Guide
 
-**GymGuru** is a full-stack AI-based application that generates personalized weekly workout and diet plans. It leverages Google's **Gemini API**, an Express.js backend, and a React.js frontend to deliver intelligent fitness recommendations based on user goals, age, preferred cuisine, and workout time.
+**GymGuru** is a full-stack AI-based application that generates personalized weekly workout and diet plans. It leverages Google's **Gemini API**,an ML Model for calory burn prediction, an Express.js backend, and a React.js frontend to deliver intelligent fitness recommendations based on user goals, age, preferred cuisine, and workout time.
 
 ![GymGuru DashBoard](./frontend/public/preview.png) <!-- Replace with an actual image path if available -->
 
